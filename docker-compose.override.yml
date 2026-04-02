@@ -1,0 +1,51 @@
+services:
+  traefik:
+    profiles: ["disabled"]
+
+  caddy:
+    build: ./caddy-build
+    restart: always
+    ports:
+      - "10.0.0.229:80:80"
+      - "10.0.0.229:443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
+    networks:
+      - internal
+      - proxy
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  watchdog:
+    build:
+      context: ./watchdog
+      dockerfile: Dockerfile
+    image: free-n8n-watchdog
+    command: ["node", "dist/index.js"]
+    restart: always
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      N8N_DB_URL: ${N8N_DB_URL}
+      N8N_API_URL: http://n8n:5678
+      N8N_API_KEY: ${N8N_API_KEY}
+      E2_ENDPOINT: ${E2_ENDPOINT}
+      E2_ACCESS_KEY_ID: ${E2_ACCESS_KEY_ID}
+      E2_SECRET_ACCESS_KEY: ${E2_SECRET_ACCESS_KEY}
+      E2_BUCKET: ${E2_BUCKET}
+      E2_REGION: ${E2_REGION}
+    networks:
+      - internal
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+volumes:
+  caddy_data:
+  caddy_config:

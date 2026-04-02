@@ -2,8 +2,8 @@ services:
   traefik:
     image: traefik:v3.3
     ports:
-      - "80:80"
-      - "443:443"
+      - "10.0.0.229:80:80"
+      - "10.0.0.229:443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
@@ -50,6 +50,20 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL}
       NODE_ENV: production
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_TRUST_HOST: "true"
+      N8N_API_URL: http://n8n:5678
+      N8N_API_KEY: ${N8N_API_KEY}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      N8N_DB_URL: ${N8N_DB_URL}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
+      E2_ENDPOINT: ${E2_ENDPOINT}
+      E2_ACCESS_KEY_ID: ${E2_ACCESS_KEY_ID}
+      E2_SECRET_ACCESS_KEY: ${E2_SECRET_ACCESS_KEY}
+      E2_BUCKET: ${E2_BUCKET}
+      E2_REGION: ${E2_REGION}
+      PUBLIC_APP_URL: https://free-n8n.infrakt.cloud
     labels:
       - traefik.enable=true
       - traefik.http.routers.sveltekit.rule=Host(`free-n8n.infrakt.cloud`) && !PathPrefix(`/n8n`)
@@ -154,7 +168,7 @@ services:
         limits:
           memory: 512M
 
-  watchdog:
+  n8n-worker:
     image: docker.n8n.io/n8nio/n8n
     command: worker
     depends_on:

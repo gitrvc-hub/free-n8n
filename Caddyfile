@@ -1,0 +1,14 @@
+free-n8n.infrakt.cloud {
+    handle /n8n/* {
+        uri strip_prefix /n8n
+        reverse_proxy n8n:5678
+    }
+
+    handle {
+        reverse_proxy sveltekit-app:3000
+    }
+
+    tls {
+        dns cloudflare {env.CF_DNS_API_TOKEN}
+    }
+}
