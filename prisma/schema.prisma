@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  active
+  reclaimed
+  suspended
+}
+
+enum JobType {
+  reclaim
+  restore
+  health_check
+  db_backup
+}
+
+enum JobStatus {
+  success
+  failed
+}
+
+model User {
+  id                   String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email                String     @unique
+  passwordHash         String     @map("password_hash")
+  isVerified           Boolean    @default(false) @map("is_verified")
+  isAdmin              Boolean    @default(false) @map("is_admin")
+  n8nUserId            String?    @map("n8n_user_id")
+  n8nPasswordEncrypted String?    @map("n8n_password_encrypted")
+  status               UserStatus @default(active)
+  lastActiveAt         DateTime?  @map("last_active_at") @db.Timestamptz
+  verificationToken    String?    @map("verification_token")
+  verificationExpires  DateTime?  @map("verification_expires") @db.Timestamptz
+  createdAt            DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt            DateTime?  @map("deleted_at") @db.Timestamptz
+  backups              Backup[]
+  jobLogs              JobLog[]
+
+  @@map("users")
+}
+
+model Backup {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  e2Path    String   @map("e2_path")
+  sizeBytes BigInt   @map("size_bytes")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("backups")
+}
+
+model JobLog {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  jobType   JobType   @map("job_type")
+  userId    String?   @map("user_id") @db.Uuid
+  status    JobStatus
+  metadata  Json?     @db.JsonB
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  user      User?     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([jobType])
+  @@index([createdAt])
+  @@map("job_logs")
+}
