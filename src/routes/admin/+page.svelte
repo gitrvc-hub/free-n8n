@@ -28,7 +28,7 @@
 
 <div class="mx-auto max-w-6xl px-4 py-8">
   <h1 class="mb-2 text-2xl font-bold text-white">Admin Dashboard</h1>
-  <p class="mb-8 text-sm text-slate-400">free-n8n.infrakt.cloud</p>
+  <p class="mb-8 text-sm text-slate-400">n8n.e4dev.com</p>
 
   <!-- Stats -->
   <div class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
