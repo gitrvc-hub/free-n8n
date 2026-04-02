@@ -12,19 +12,18 @@ function getPool() {
 export interface N8nUser {
   id: string;
   email: string;
-  role: string;
+  roleSlug: string;
 }
 
 export async function createN8nUser(email: string, password: string): Promise<N8nUser> {
   const hashedPassword = await bcrypt.hash(password, 10);
-  const id = randomBytes(16).toString('hex');
   const now = new Date().toISOString();
 
   const result = await getPool().query(
-    `INSERT INTO "user" (id, email, "firstName", "lastName", password, role, "personalizationAnswers", "createdAt", "updatedAt")
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-     RETURNING id, email, role`,
-    [id, email, 'Free', 'User', hashedPassword, 'global:member', null, now, now]
+    `INSERT INTO "user" (email, "firstName", "lastName", password, "roleSlug", "personalizationAnswers", "createdAt", "updatedAt")
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+     RETURNING id, email, "roleSlug"`,
+    [email, 'Free', 'User', hashedPassword, 'global:member', null, now, now]
   );
 
   return result.rows[0] as N8nUser;
