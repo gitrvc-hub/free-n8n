@@ -7,24 +7,47 @@ function getResend() {
   return _resend;
 }
 
-export async function sendVerificationEmail(to: string, token: string, n8nPassword: string): Promise<void> {
+export async function sendVerificationEmail(to: string, token: string, platformPassword: string, n8nPassword: string): Promise<void> {
   const verifyUrl = `${env.PUBLIC_APP_URL}/auth/verify?token=${token}`;
   const { error } = await getResend().emails.send({
     from: env.EMAIL_FROM,
     to,
-    subject: 'Verify your free n8n account',
+    subject: 'Your free n8n workspace is ready',
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 500px; margin: 0 auto;">
         <h2 style="color: #1e1b4b;">Welcome to Free n8n</h2>
-        <p>Click the button below to verify your email and activate your n8n workspace:</p>
+        <p>Click the button below to verify your email and activate your workspace:</p>
         <p style="text-align: center; margin: 24px 0;">
-          <a href="${verifyUrl}" style="background-color: #4f46e5; color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;">Verify my email</a>
+          <a href="${verifyUrl}" style="background-color: #4f46e5; color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;">Verify &amp; Activate</a>
         </p>
         <div style="background-color: #f1f5f9; border-radius: 8px; padding: 16px; margin: 24px 0;">
-          <p style="margin: 0 0 8px; font-weight: 600; color: #334155;">Your n8n login credentials:</p>
-          <p style="margin: 4px 0; color: #475569;"><strong>Email:</strong> ${to}</p>
-          <p style="margin: 4px 0; color: #475569;"><strong>Password:</strong> <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">${n8nPassword}</code></p>
-          <p style="margin: 8px 0 0; font-size: 12px; color: #94a3b8;">Use these to sign in to the n8n editor after verification.</p>
+          <p style="margin: 0 0 12px; font-weight: 600; color: #334155;">Your login credentials</p>
+          <table style="width: 100%; font-size: 14px; color: #475569;">
+            <tr>
+              <td style="padding: 4px 0; font-weight: 600;" colspan="2">Dashboard (free-n8n.infrakt.cloud)</td>
+            </tr>
+            <tr>
+              <td style="padding: 2px 0; color: #94a3b8;">Email</td>
+              <td style="padding: 2px 0;">${to}</td>
+            </tr>
+            <tr>
+              <td style="padding: 2px 0; color: #94a3b8;">Password</td>
+              <td style="padding: 2px 0;"><code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">${platformPassword}</code></td>
+            </tr>
+            <tr><td colspan="2" style="padding: 8px 0;"></td></tr>
+            <tr>
+              <td style="padding: 4px 0; font-weight: 600;" colspan="2">n8n Editor</td>
+            </tr>
+            <tr>
+              <td style="padding: 2px 0; color: #94a3b8;">Email</td>
+              <td style="padding: 2px 0;">${to}</td>
+            </tr>
+            <tr>
+              <td style="padding: 2px 0; color: #94a3b8;">Password</td>
+              <td style="padding: 2px 0;"><code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">${n8nPassword}</code></td>
+            </tr>
+          </table>
+          <p style="margin: 12px 0 0; font-size: 12px; color: #94a3b8;">Save these credentials — you'll need them to log in.</p>
         </div>
         <p style="color: #94a3b8; font-size: 13px;">This link expires in 24 hours. If you didn't sign up, ignore this email.</p>
       </div>

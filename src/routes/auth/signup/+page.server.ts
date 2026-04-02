@@ -8,16 +8,9 @@ import { encrypt } from '$lib/server/encryption';
 import { env } from '$lib/server/env';
 import { sendVerificationEmail } from '$lib/server/email';
 
-const signupSchema = z
-  .object({
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-    confirmPassword: z.string()
-  })
-  .refine((d) => d.password === d.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword']
-  });
+const signupSchema = z.object({
+  email: z.string().email('Invalid email address')
+});
 
 export const actions: Actions = {
   default: async ({ request }) => {
@@ -31,7 +24,7 @@ export const actions: Actions = {
       });
     }
 
-    const { email, password } = parsed.data;
+    const { email } = parsed.data;
     const existing = await db.user.findUnique({ where: { email } });
     if (existing) {
       return fail(400, {
@@ -40,16 +33,18 @@ export const actions: Actions = {
       });
     }
 
-    const passwordHash = await bcrypt.hash(password, 12);
+    // Auto-generate both passwords
+    const platformPassword = randomBytes(12).toString('base64url');
+    const n8nPassword = randomBytes(12).toString('base64url');
+    const passwordHash = await bcrypt.hash(platformPassword, 12);
+    const n8nPasswordEncrypted = encrypt(n8nPassword, env.N8N_ENCRYPTION_KEY);
     const verificationToken = randomBytes(32).toString('hex');
     const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    const n8nPassword = randomBytes(12).toString('base64url');
-    const n8nPasswordEncrypted = encrypt(n8nPassword, env.N8N_ENCRYPTION_KEY);
 
     await db.user.create({
       data: { email, passwordHash, verificationToken, verificationExpires, n8nPasswordEncrypted }
     });
-    await sendVerificationEmail(email, verificationToken, n8nPassword);
+    await sendVerificationEmail(email, verificationToken, platformPassword, n8nPassword);
 
     redirect(303, '/auth/verify?sent=true');
   }
