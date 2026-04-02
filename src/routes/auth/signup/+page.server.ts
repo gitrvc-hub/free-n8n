@@ -4,6 +4,8 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { randomBytes } from 'node:crypto';
 import { db } from '$lib/server/db';
+import { encrypt } from '$lib/server/encryption';
+import { env } from '$lib/server/env';
 import { sendVerificationEmail } from '$lib/server/email';
 
 const signupSchema = z
@@ -41,9 +43,13 @@ export const actions: Actions = {
     const passwordHash = await bcrypt.hash(password, 12);
     const verificationToken = randomBytes(32).toString('hex');
     const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const n8nPassword = randomBytes(12).toString('base64url');
+    const n8nPasswordEncrypted = encrypt(n8nPassword, env.N8N_ENCRYPTION_KEY);
 
-    await db.user.create({ data: { email, passwordHash, verificationToken, verificationExpires } });
-    await sendVerificationEmail(email, verificationToken);
+    await db.user.create({
+      data: { email, passwordHash, verificationToken, verificationExpires, n8nPasswordEncrypted }
+    });
+    await sendVerificationEmail(email, verificationToken, n8nPassword);
 
     redirect(303, '/auth/verify?sent=true');
   }
