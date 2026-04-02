@@ -21,13 +21,21 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
+let _env: Env | undefined;
+
 function validateEnv(): Env {
+  if (_env) return _env;
   const result = envSchema.safeParse(process.env);
   if (!result.success) {
     const missing = result.error.issues.map((i) => i.path.join('.')).join(', ');
     throw new Error(`[env] Missing or invalid environment variables: ${missing}`);
   }
-  return result.data;
+  _env = result.data;
+  return _env;
 }
 
-export const env = validateEnv();
+export const env = new Proxy({} as Env, {
+  get(_, prop: string) {
+    return validateEnv()[prop as keyof Env];
+  }
+});

@@ -1,9 +1,11 @@
 import { env } from '$lib/server/env';
 
-const headers = {
-  'X-N8N-API-KEY': env.N8N_API_KEY,
-  'Content-Type': 'application/json'
-};
+function getHeaders() {
+  return {
+    'X-N8N-API-KEY': env.N8N_API_KEY,
+    'Content-Type': 'application/json'
+  };
+}
 
 interface N8nWorkflow {
   id: string;
@@ -15,7 +17,7 @@ interface N8nWorkflow {
 }
 
 export async function exportWorkflows(): Promise<N8nWorkflow[]> {
-  const response = await fetch(`${env.N8N_API_URL}/api/v1/workflows`, { headers });
+  const response = await fetch(`${env.N8N_API_URL}/api/v1/workflows`, { headers: getHeaders() });
   if (!response.ok) {
     throw new Error(`[n8n-api] Failed to list workflows: ${response.status}`);
   }
@@ -24,7 +26,7 @@ export async function exportWorkflows(): Promise<N8nWorkflow[]> {
 }
 
 export async function getWorkflow(workflowId: string): Promise<N8nWorkflow> {
-  const response = await fetch(`${env.N8N_API_URL}/api/v1/workflows/${workflowId}`, { headers });
+  const response = await fetch(`${env.N8N_API_URL}/api/v1/workflows/${workflowId}`, { headers: getHeaders() });
   if (!response.ok) {
     throw new Error(`[n8n-api] Failed to get workflow ${workflowId}: ${response.status}`);
   }
@@ -34,7 +36,7 @@ export async function getWorkflow(workflowId: string): Promise<N8nWorkflow> {
 export async function importWorkflow(workflow: N8nWorkflow): Promise<N8nWorkflow> {
   const response = await fetch(`${env.N8N_API_URL}/api/v1/workflows`, {
     method: 'POST',
-    headers,
+    headers: getHeaders(),
     body: JSON.stringify(workflow)
   });
   if (!response.ok) {

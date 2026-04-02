@@ -6,15 +6,19 @@ import {
 } from '@aws-sdk/client-s3';
 import { env } from '$lib/server/env';
 
-const s3 = new S3Client({
-  endpoint: env.E2_ENDPOINT,
-  region: env.E2_REGION,
-  credentials: {
-    accessKeyId: env.E2_ACCESS_KEY_ID,
-    secretAccessKey: env.E2_SECRET_ACCESS_KEY
-  },
-  forcePathStyle: true
-});
+let _s3: S3Client;
+function getS3() {
+  if (!_s3) _s3 = new S3Client({
+    endpoint: env.E2_ENDPOINT,
+    region: env.E2_REGION,
+    credentials: {
+      accessKeyId: env.E2_ACCESS_KEY_ID,
+      secretAccessKey: env.E2_SECRET_ACCESS_KEY
+    },
+    forcePathStyle: true
+  });
+  return _s3;
+}
 
 export function getBackupKey(userId: string, timestamp: string): string {
   return `backups/${userId}/${timestamp}.json.gz`;
@@ -26,14 +30,14 @@ export async function uploadBackup(
   timestamp: string
 ): Promise<{ key: string; size: number }> {
   const key = getBackupKey(userId, timestamp);
-  await s3.send(
+  await getS3().send(
     new PutObjectCommand({ Bucket: env.E2_BUCKET, Key: key, Body: data, ContentType: 'application/gzip' })
   );
   return { key, size: data.byteLength };
 }
 
 export async function downloadBackup(key: string): Promise<Buffer> {
-  const response = await s3.send(
+  const response = await getS3().send(
     new GetObjectCommand({ Bucket: env.E2_BUCKET, Key: key })
   );
   const stream = response.Body;
@@ -46,7 +50,7 @@ export async function downloadBackup(key: string): Promise<Buffer> {
 }
 
 export async function deleteBackup(key: string): Promise<void> {
-  await s3.send(
+  await getS3().send(
     new DeleteObjectCommand({ Bucket: env.E2_BUCKET, Key: key })
   );
 }

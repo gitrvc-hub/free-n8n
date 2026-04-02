@@ -1,11 +1,15 @@
 import { Resend } from 'resend';
 import { env } from '$lib/server/env';
 
-const resend = new Resend(env.RESEND_API_KEY);
+let _resend: Resend;
+function getResend() {
+  if (!_resend) _resend = new Resend(env.RESEND_API_KEY);
+  return _resend;
+}
 
 export async function sendVerificationEmail(to: string, token: string): Promise<void> {
   const verifyUrl = `${env.PUBLIC_APP_URL}/auth/verify?token=${token}`;
-  const { error } = await resend.emails.send({
+  const { error } = await getResend().emails.send({
     from: env.EMAIL_FROM,
     to,
     subject: 'Verify your free n8n account',
@@ -25,7 +29,7 @@ export async function sendVerificationEmail(to: string, token: string): Promise<
 
 export async function sendReclaimNotification(to: string): Promise<void> {
   const dashboardUrl = `${env.PUBLIC_APP_URL}/dashboard`;
-  const { error } = await resend.emails.send({
+  const { error } = await getResend().emails.send({
     from: env.EMAIL_FROM,
     to,
     subject: 'Your n8n workspace has been archived',
