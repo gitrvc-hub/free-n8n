@@ -1,1 +1,6 @@
 @import 'tailwindcss';
+
+html,
+body {
+  @apply bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white min-h-screen;
+}

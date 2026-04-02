@@ -1,6 +1,9 @@
-import type { Actions } from './$types';
-import { signIn } from '$lib/server/auth';
+import type { PageServerLoad } from './$types';
+import { redirect } from '@sveltejs/kit';
 
-export const actions: Actions = {
-  default: signIn
+export const load: PageServerLoad = async (event) => {
+  const session = await event.locals.auth();
+  if (session?.user) redirect(303, '/dashboard');
+
+  return {};
 };

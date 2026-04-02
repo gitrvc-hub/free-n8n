@@ -4,19 +4,19 @@
   let { data, children }: { data: LayoutData; children: import('svelte').Snippet } = $props();
 </script>
 
-<div class="min-h-screen bg-white">
-  <nav class="border-b px-4 py-3">
+<div class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950">
+  <nav class="bg-white/5 backdrop-blur-xl border-b border-white/10 px-4 py-3">
     <div class="mx-auto flex max-w-5xl items-center justify-between">
-      <a href="/" class="text-lg font-bold">Free n8n</a>
+      <a href="/" class="text-lg font-bold text-white tracking-tight">Free n8n</a>
       <div class="flex items-center gap-4">
         {#if data.session?.user}
-          <a href="/dashboard" class="text-sm hover:underline">Dashboard</a>
+          <a href="/dashboard" class="text-sm text-slate-300 hover:text-white transition-colors">Dashboard</a>
           <form method="POST" action="/auth/login?/signout">
-            <button type="submit" class="text-sm text-gray-600 hover:underline">Log out</button>
+            <button type="submit" class="text-sm text-slate-400 hover:text-white transition-colors">Log out</button>
           </form>
         {:else}
-          <a href="/auth/login" class="text-sm hover:underline">Log in</a>
-          <a href="/auth/signup" class="rounded-md bg-blue-600 px-4 py-1.5 text-sm text-white hover:bg-blue-700">Sign up free</a>
+          <a href="/auth/login" class="text-sm text-slate-300 hover:text-white transition-colors">Log in</a>
+          <a href="/auth/signup" class="rounded-lg bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 text-sm text-white shadow-lg shadow-indigo-500/25 transition-colors">Sign up free</a>
         {/if}
       </div>
     </div>

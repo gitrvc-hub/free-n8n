@@ -6,18 +6,18 @@
 <svelte:head><title>Verify Email - Free n8n</title></svelte:head>
 
 <div class="mx-auto max-w-md px-4 py-16 text-center">
-  {#if data.status === 'sent'}
-    <h1 class="mb-4 text-2xl font-bold">Check your email</h1>
-    <p>We sent a verification link to your email. Click it to activate your account.</p>
-  {:else if data.status === 'verified'}
-    <h1 class="mb-4 text-2xl font-bold">Email verified!</h1>
-    <p class="mb-4">Your n8n workspace is ready.</p>
-    <a href="/auth/login" class="rounded-md bg-blue-600 px-6 py-2 text-white hover:bg-blue-700"
-      >Log in</a
-    >
-  {:else}
-    <h1 class="mb-4 text-2xl font-bold">Invalid or expired link</h1>
-    <p>This verification link is invalid or has expired.</p>
-    <a href="/auth/signup" class="mt-4 inline-block text-blue-600 hover:underline">Sign up</a>
-  {/if}
+  <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-8">
+    {#if data.status === 'sent'}
+      <h1 class="mb-4 text-2xl font-bold text-white">Check your email</h1>
+      <p class="text-slate-300">We sent a verification link to your email. Click it to activate your account.</p>
+    {:else if data.status === 'verified'}
+      <h1 class="mb-4 text-2xl font-bold text-white">Email verified!</h1>
+      <p class="mb-6 text-slate-300">Your n8n workspace is ready.</p>
+      <a href="/auth/login" class="inline-block rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-2.5 text-white font-medium shadow-lg shadow-indigo-500/25 transition-colors">Log in</a>
+    {:else}
+      <h1 class="mb-4 text-2xl font-bold text-white">Invalid or expired link</h1>
+      <p class="mb-6 text-slate-300">This verification link is invalid or has expired.</p>
+      <a href="/auth/signup" class="text-indigo-400 hover:text-indigo-300 transition-colors">Sign up</a>
+    {/if}
+  </div>
 </div>
