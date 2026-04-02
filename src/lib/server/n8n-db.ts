@@ -18,15 +18,36 @@ export interface N8nUser {
 export async function createN8nUser(email: string, password: string): Promise<N8nUser> {
   const hashedPassword = await bcrypt.hash(password, 10);
   const now = new Date().toISOString();
+  const pool = getPool();
 
-  const result = await getPool().query(
+  // Create the user
+  const result = await pool.query(
     `INSERT INTO "user" (email, "firstName", "lastName", password, "roleSlug", "personalizationAnswers", "createdAt", "updatedAt")
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
      RETURNING id, email, "roleSlug"`,
     [email, 'Free', 'User', hashedPassword, 'global:member', null, now, now]
   );
 
-  return result.rows[0] as N8nUser;
+  const user = result.rows[0] as N8nUser;
+
+  // Create personal project (required by n8n for user to function)
+  const projectResult = await pool.query(
+    `INSERT INTO project (id, name, type, "creatorId")
+     VALUES (gen_random_uuid(), $1, 'personal', $2)
+     RETURNING id`,
+    [email, user.id]
+  );
+
+  const projectId = projectResult.rows[0].id;
+
+  // Link user to their personal project
+  await pool.query(
+    `INSERT INTO project_relation ("projectId", "userId", role)
+     VALUES ($1, $2, 'project:personalOwner')`,
+    [projectId, user.id]
+  );
+
+  return user;
 }
 
 export async function deactivateN8nUser(n8nUserId: string): Promise<void> {
