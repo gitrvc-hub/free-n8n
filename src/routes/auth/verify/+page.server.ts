@@ -38,5 +38,5 @@ export const load: PageServerLoad = async ({ url }) => {
     }
   });
 
-  return { status: 'verified' as const, email: user.email, n8nPassword };
+  return { status: 'verified' as const };
 };

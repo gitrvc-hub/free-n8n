@@ -7,7 +7,7 @@ function getResend() {
   return _resend;
 }
 
-export async function sendVerificationEmail(to: string, token: string, platformPassword: string, n8nPassword: string): Promise<void> {
+export async function sendVerificationEmail(to: string, token: string, platformPassword: string): Promise<void> {
   const verifyUrl = `${env.PUBLIC_APP_URL}/auth/verify?token=${token}`;
   const { error } = await getResend().emails.send({
     from: env.EMAIL_FROM,
@@ -24,9 +24,6 @@ export async function sendVerificationEmail(to: string, token: string, platformP
           <p style="margin: 0 0 12px; font-weight: 600; color: #334155;">Your login credentials</p>
           <table style="width: 100%; font-size: 14px; color: #475569;">
             <tr>
-              <td style="padding: 4px 0; font-weight: 600;" colspan="2">Dashboard (free-n8n.infrakt.cloud)</td>
-            </tr>
-            <tr>
               <td style="padding: 2px 0; color: #94a3b8;">Email</td>
               <td style="padding: 2px 0;">${to}</td>
             </tr>
@@ -34,20 +31,8 @@ export async function sendVerificationEmail(to: string, token: string, platformP
               <td style="padding: 2px 0; color: #94a3b8;">Password</td>
               <td style="padding: 2px 0;"><code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">${platformPassword}</code></td>
             </tr>
-            <tr><td colspan="2" style="padding: 8px 0;"></td></tr>
-            <tr>
-              <td style="padding: 4px 0; font-weight: 600;" colspan="2">n8n Editor</td>
-            </tr>
-            <tr>
-              <td style="padding: 2px 0; color: #94a3b8;">Email</td>
-              <td style="padding: 2px 0;">${to}</td>
-            </tr>
-            <tr>
-              <td style="padding: 2px 0; color: #94a3b8;">Password</td>
-              <td style="padding: 2px 0;"><code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">${n8nPassword}</code></td>
-            </tr>
           </table>
-          <p style="margin: 12px 0 0; font-size: 12px; color: #94a3b8;">Save these credentials — you'll need them to log in.</p>
+          <p style="margin: 12px 0 0; font-size: 12px; color: #94a3b8;">Use these to log in after verification. n8n opens automatically from the dashboard.</p>
         </div>
         <p style="color: #94a3b8; font-size: 13px;">This link expires in 24 hours. If you didn't sign up, ignore this email.</p>
       </div>

@@ -40,7 +40,7 @@
           Last active {formatDistanceToNow(new Date(data.user.lastActiveAt), { addSuffix: true })}
         {:else}No activity yet{/if}
       </p>
-      <a href="/n8n/" class="inline-block rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-2.5 text-white font-medium shadow-lg shadow-indigo-500/25 transition-colors">Open n8n</a>
+      <a href="/api/n8n/session" class="inline-block rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-2.5 text-white font-medium shadow-lg shadow-indigo-500/25 transition-colors">Open n8n</a>
     {:else if data.user.status === 'reclaimed'}
       <p class="mb-5 text-sm text-slate-300">Your workspace was archived due to inactivity.</p>
       {#if restoreError}<p class="mb-4 text-sm text-red-400">{restoreError}</p>{/if}

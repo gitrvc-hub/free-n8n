@@ -44,7 +44,7 @@ export const actions: Actions = {
     await db.user.create({
       data: { email, passwordHash, verificationToken, verificationExpires, n8nPasswordEncrypted }
     });
-    await sendVerificationEmail(email, verificationToken, platformPassword, n8nPassword);
+    await sendVerificationEmail(email, verificationToken, platformPassword);
 
     redirect(303, '/auth/verify?sent=true');
   }
