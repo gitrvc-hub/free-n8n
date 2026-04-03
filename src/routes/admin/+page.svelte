@@ -109,7 +109,9 @@
 							<td>
 								<div class={statusClasses(user.status)}>{getStatusLabel(user.status)}</div>
 							</td>
-							<td>{user.usage.activeWorkflowCount} workflows · {user.usage.executionsToday} today</td>
+							<td
+								>{user.usage.activeWorkflowCount} workflows · {user.usage.executionsToday} today</td
+							>
 							<td>{user.backupCount}</td>
 							<td>
 								{#if user.status === 'suspended'}

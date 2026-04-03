@@ -69,7 +69,9 @@
 				<p class="text-sm text-slate-400">{data.user.email}</p>
 				<h1 class="mt-2 text-3xl font-semibold text-white">Sandbox</h1>
 			</div>
-			<div class={statusClasses(getStatusTone(data.user.status))}>{getStatusLabel(data.user.status)}</div>
+			<div class={statusClasses(getStatusTone(data.user.status))}>
+				{getStatusLabel(data.user.status)}
+			</div>
 		</div>
 
 		<div class="mt-6 grid gap-4 sm:grid-cols-3">
@@ -79,16 +81,22 @@
 			</div>
 			<div class="metric-card p-4">
 				<p class="text-sm text-slate-400">Workflows</p>
-				<p class="mt-2 text-lg font-semibold text-white">{data.usage.activeWorkflowCount}/{data.plan.workflowLimit}</p>
+				<p class="mt-2 text-lg font-semibold text-white">
+					{data.usage.activeWorkflowCount}/{data.plan.workflowLimit}
+				</p>
 			</div>
 			<div class="metric-card p-4">
 				<p class="text-sm text-slate-400">Executions today</p>
-				<p class="mt-2 text-lg font-semibold text-white">{data.usage.executionsToday}/{data.plan.executionLimitPerDay}</p>
+				<p class="mt-2 text-lg font-semibold text-white">
+					{data.usage.executionsToday}/{data.plan.executionLimitPerDay}
+				</p>
 			</div>
 		</div>
 
 		{#if data.limitReached}
-			<div class="mt-6 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
+			<div
+				class="mt-6 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-100"
+			>
 				Sandbox limit reached. Lower usage or wait for the daily reset.
 			</div>
 		{/if}
@@ -97,7 +105,11 @@
 			{#if data.user.status === 'active'}
 				<a href="/api/n8n/session" class="primary-button w-full sm:w-auto">Open editor</a>
 			{:else if data.user.status === 'reclaimed'}
-				<button onclick={restoreSandbox} disabled={restoring} class="primary-button w-full sm:w-auto">
+				<button
+					onclick={restoreSandbox}
+					disabled={restoring}
+					class="primary-button w-full sm:w-auto"
+				>
 					{restoring ? 'Restoring...' : 'Restore sandbox'}
 				</button>
 				{#if restoreError}
