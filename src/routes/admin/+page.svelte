@@ -84,14 +84,10 @@
 <div class="page-wrap space-y-8">
 	<section class="surface-panel-strong grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.2fr_0.8fr]">
 		<div class="space-y-5">
-			<div class="eyebrow">Operations console</div>
+			<div class="eyebrow">Ops</div>
 			<h1 class="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-				Adoption, capacity, and reclaim health for the shared n8n practice sandbox.
+				Platform overview
 			</h1>
-			<p class="max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
-				Track who is actively learning, who is approaching archive, and how much shared sandbox
-				capacity is at risk before users hit practice limits.
-			</p>
 			<div
 				class="rounded-3xl border border-cyan-400/15 bg-cyan-400/8 px-5 py-4 text-sm leading-6 text-cyan-50"
 			>
@@ -110,20 +106,16 @@
 
 		<div class="grid gap-4 sm:grid-cols-2">
 			<div class="metric-card p-5">
-				<p class="text-sm font-medium text-slate-400">At risk of reclaim</p>
+				<p class="text-sm font-medium text-slate-400">At risk</p>
 				<p class="mt-2 text-3xl font-semibold text-white">{data.stats.atRiskUsers}</p>
-				<p class="mt-2 text-sm text-slate-400">
-					No recent activity within {data.stats.reclaimDays} days
-				</p>
+				<p class="mt-2 text-sm text-slate-400">No activity within {data.stats.reclaimDays} days</p>
 			</div>
 			<div class="metric-card p-5">
-				<p class="text-sm font-medium text-slate-400">Backup footprint</p>
+				<p class="text-sm font-medium text-slate-400">Backups</p>
 				<p class="mt-2 text-3xl font-semibold text-white">
 					{formatBytes(data.stats.backupStorageBytes)}
 				</p>
-				<p class="mt-2 text-sm text-slate-400">
-					{data.stats.totalBackups} archived snapshots stored
-				</p>
+				<p class="mt-2 text-sm text-slate-400">{data.stats.totalBackups} snapshots stored</p>
 			</div>
 		</div>
 	</section>
@@ -149,15 +141,15 @@
 
 	<section class="grid gap-4 lg:grid-cols-3">
 		<div class="surface-panel p-5">
-			<p class="text-sm font-medium text-slate-400">Users at workflow cap</p>
+			<p class="text-sm font-medium text-slate-400">Workflow cap</p>
 			<p class="mt-2 text-2xl font-semibold text-white">{data.stats.overWorkflowLimit}</p>
 		</div>
 		<div class="surface-panel p-5">
-			<p class="text-sm font-medium text-slate-400">Users at execution cap</p>
+			<p class="text-sm font-medium text-slate-400">Execution cap</p>
 			<p class="mt-2 text-2xl font-semibold text-white">{data.stats.overExecutionLimit}</p>
 		</div>
 		<div class="surface-panel p-5">
-			<p class="text-sm font-medium text-slate-400">Inactive but not archived</p>
+			<p class="text-sm font-medium text-slate-400">Inactive</p>
 			<p class="mt-2 text-2xl font-semibold text-white">{data.stats.inactiveUsers}</p>
 		</div>
 	</section>

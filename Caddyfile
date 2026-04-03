@@ -1,4 +1,9 @@
 n8n.e4dev.com {
+    @n8n_entry path /n8n /n8n/ /n8n/setup /n8n/signin /n8n/login
+    handle @n8n_entry {
+        redir /auth/login 302
+    }
+
     @n8n_strip {
         path /n8n/assets/* /n8n/static/* /n8n/rest/* /n8n/api/* /n8n/types/* /n8n/push/* /n8n/webhook/* /n8n/webhook-test/* /n8n/healthz /n8n/favicon.ico
     }
@@ -8,7 +13,7 @@ n8n.e4dev.com {
         reverse_proxy n8n:5678
     }
 
-    @n8n path /n8n /n8n/*
+    @n8n path /n8n/*
     handle @n8n {
         reverse_proxy n8n:5678
     }
