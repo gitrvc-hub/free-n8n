@@ -4,8 +4,12 @@
 	let { data }: { data: { suspended: boolean } } = $props();
 	let email = $state('');
 	let password = $state('');
-	let error = $state(data.suspended ? 'This account is suspended.' : '');
+	let error = $state('');
 	let loading = $state(false);
+
+	$effect(() => {
+		error = data.suspended ? 'This account is suspended.' : '';
+	});
 
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
@@ -19,7 +23,8 @@
 		});
 
 		if (result?.error) {
-			error = result.error === 'SUSPENDED' ? 'This account is suspended.' : 'Invalid email or password';
+			error =
+				result.error === 'SUSPENDED' ? 'This account is suspended.' : 'Invalid email or password';
 			loading = false;
 		} else {
 			window.location.href = '/dashboard';
