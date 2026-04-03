@@ -34,14 +34,13 @@ export const GET: RequestHandler = async (event) => {
 	});
 
 	if (!loginRes.ok) {
-		// Fallback: redirect to n8n login page
-		redirect(303, '/n8n/');
+		redirect(303, '/auth/login');
 	}
 
 	// Extract n8n session cookies and set them on the user's browser
 	const setCookies = loginRes.headers.getSetCookie();
 	const headers = new Headers();
-	headers.set('location', '/n8n/');
+	headers.set('location', '/n8n/home/workflows?platform=1');
 
 	for (const cookie of setCookies) {
 		// Rewrite cookie path to work under /n8n/ and root
