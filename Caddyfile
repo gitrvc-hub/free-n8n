@@ -9,7 +9,7 @@ n8n.e4dev.com {
 
     @n8n_entry path /n8n /n8n/ /n8n/setup /n8n/signin /n8n/login /n8n/home /n8n/home/*
     handle @n8n_entry {
-        redir /auth/login
+        redir * /auth/login 302
     }
 
     @n8n_strip {
