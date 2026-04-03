@@ -1,6 +1,13 @@
 <script lang="ts">
 	import '../app.css';
-	let { children }: { data: unknown; children: import('svelte').Snippet } = $props();
+	import { signOut } from '@auth/sveltekit/client';
+	import type { LayoutData } from './$types';
+
+	let { data, children }: { data: LayoutData; children: import('svelte').Snippet } = $props();
+
+	function handleLogout() {
+		signOut({ callbackUrl: '/' });
+	}
 </script>
 
 <div class="relative min-h-screen overflow-x-hidden">
@@ -12,4 +19,10 @@
 	<main class="relative z-10 pb-20 pt-8 sm:pt-10">
 		{@render children()}
 	</main>
+
+	{#if data.session?.user}
+		<div class="fixed right-4 top-4 z-20 sm:right-6 sm:top-6">
+			<button onclick={handleLogout} class="secondary-button px-4 py-2">Sign out</button>
+		</div>
+	{/if}
 </div>
