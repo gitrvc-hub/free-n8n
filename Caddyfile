@@ -1,4 +1,4 @@
-free-n8n.infrakt.cloud {
+n8n.e4dev.com {
     handle /n8n/* {
         uri strip_prefix /n8n
         reverse_proxy n8n:5678

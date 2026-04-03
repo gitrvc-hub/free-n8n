@@ -2,8 +2,8 @@ services:
   traefik:
     image: traefik:v3.3
     ports:
-      - "10.0.0.229:80:80"
-      - "10.0.0.229:443:443"
+      - '10.0.0.229:80:80'
+      - '10.0.0.229:443:443'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
@@ -36,11 +36,12 @@ services:
           memory: 256M
 
   sveltekit-app:
+    image: ghcr.io/gitrvc-hub/free-n8n/app:${GIT_SHA:-latest}
     build:
       context: .
       dockerfile: Dockerfile
     expose:
-      - "3000"
+      - '3000'
     depends_on:
       postgres:
         condition: service_healthy
@@ -51,7 +52,7 @@ services:
       REDIS_URL: ${REDIS_URL}
       NODE_ENV: production
       AUTH_SECRET: ${AUTH_SECRET}
-      AUTH_TRUST_HOST: "true"
+      AUTH_TRUST_HOST: 'true'
       N8N_API_URL: http://n8n:5678
       N8N_API_KEY: ${N8N_API_KEY}
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
@@ -63,10 +64,10 @@ services:
       E2_SECRET_ACCESS_KEY: ${E2_SECRET_ACCESS_KEY}
       E2_BUCKET: ${E2_BUCKET}
       E2_REGION: ${E2_REGION}
-      PUBLIC_APP_URL: https://free-n8n.infrakt.cloud
+      PUBLIC_APP_URL: https://n8n.e4dev.com
     labels:
       - traefik.enable=true
-      - traefik.http.routers.sveltekit.rule=Host(`free-n8n.infrakt.cloud`) && !PathPrefix(`/n8n`)
+      - traefik.http.routers.sveltekit.rule=Host(`n8n.e4dev.com`) && !PathPrefix(`/n8n`)
       - traefik.http.routers.sveltekit.entrypoints=websecure
       - traefik.http.routers.sveltekit.tls.certresolver=cloudflare
       - traefik.http.routers.sveltekit.middlewares=security-headers@file,rate-limit@file
@@ -83,7 +84,7 @@ services:
   n8n:
     image: docker.n8n.io/n8nio/n8n
     expose:
-      - "5678"
+      - '5678'
     depends_on:
       postgres:
         condition: service_healthy
@@ -104,19 +105,19 @@ services:
       QUEUE_BULL_REDIS_PORT: 6379
       N8N_PORT: 5678
       N8N_PROTOCOL: https
-      N8N_HOST: free-n8n.infrakt.cloud
+      N8N_HOST: n8n.e4dev.com
       N8N_PATH: /n8n/
-      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
-      N8N_RUNNERS_ENABLED: "true"
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: 'true'
+      N8N_RUNNERS_ENABLED: 'true'
       EXECUTIONS_TIMEOUT: 60
       EXECUTIONS_TIMEOUT_MAX: 60
       N8N_CONCURRENCY_PRODUCTION_LIMIT: 20
-      N8N_USER_MANAGEMENT_DISABLED: "false"
+      N8N_USER_MANAGEMENT_DISABLED: 'false'
       GENERIC_TIMEZONE: UTC
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
     labels:
       - traefik.enable=true
-      - traefik.http.routers.n8n.rule=Host(`free-n8n.infrakt.cloud`) && PathPrefix(`/n8n`)
+      - traefik.http.routers.n8n.rule=Host(`n8n.e4dev.com`) && PathPrefix(`/n8n`)
       - traefik.http.routers.n8n.entrypoints=websecure
       - traefik.http.routers.n8n.tls.certresolver=cloudflare
       - traefik.http.routers.n8n.middlewares=n8n-strip-prefix,security-headers@file,rate-limit@file
@@ -139,7 +140,7 @@ services:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -156,7 +157,7 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -189,6 +190,38 @@ services:
       QUEUE_BULL_REDIS_PORT: 6379
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
       GENERIC_TIMEZONE: UTC
+    networks:
+      - internal
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  watchdog:
+    image: ghcr.io/gitrvc-hub/free-n8n/watchdog:${GIT_SHA:-latest}
+    build:
+      context: ./watchdog
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      N8N_DB_URL: ${N8N_DB_URL}
+      N8N_API_URL: http://n8n:5678
+      N8N_API_KEY: ${N8N_API_KEY}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://n8n.e4dev.com}
+      E2_ENDPOINT: ${E2_ENDPOINT}
+      E2_ACCESS_KEY_ID: ${E2_ACCESS_KEY_ID}
+      E2_SECRET_ACCESS_KEY: ${E2_SECRET_ACCESS_KEY}
+      E2_BUCKET: ${E2_BUCKET}
+      E2_REGION: ${E2_REGION}
+      INACTIVITY_DAYS: ${INACTIVITY_DAYS:-7}
     networks:
       - internal
     restart: unless-stopped

@@ -1,23 +1,49 @@
 <script lang="ts">
-  import type { PageData } from './$types';
-  let { data }: { data: PageData } = $props();
+	import type { PageData } from './$types';
+
+	let { data }: { data: PageData } = $props();
 </script>
 
-<svelte:head><title>Verify Email - Free n8n</title></svelte:head>
+<svelte:head>
+	<title>Verify Email | Free n8n</title>
+</svelte:head>
 
-<div class="mx-auto max-w-md px-4 py-16 text-center">
-  <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-8">
-    {#if data.status === 'sent'}
-      <h1 class="mb-4 text-2xl font-bold text-white">Check your email</h1>
-      <p class="text-slate-300">We sent a verification link to your email. Click it to activate your account.</p>
-    {:else if data.status === 'verified'}
-      <h1 class="mb-4 text-2xl font-bold text-white">You're all set!</h1>
-      <p class="mb-6 text-slate-300">Your workspace is active. Check your email for your login password.</p>
-      <a href="/auth/login" class="inline-block rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-2.5 text-white font-medium shadow-lg shadow-indigo-500/25 transition-colors">Go to Dashboard</a>
-    {:else}
-      <h1 class="mb-4 text-2xl font-bold text-white">Invalid or expired link</h1>
-      <p class="mb-6 text-slate-300">This verification link is invalid or has expired.</p>
-      <a href="/auth/signup" class="text-indigo-400 hover:text-indigo-300 transition-colors">Sign up</a>
-    {/if}
-  </div>
+<div class="page-wrap max-w-3xl">
+	<div class="surface-panel-strong p-6 text-center sm:p-10">
+		{#if data.status === 'sent'}
+			<div class="eyebrow">Verification sent</div>
+			<h1 class="mt-5 text-3xl font-semibold text-white sm:text-4xl">
+				Check your inbox to activate the sandbox.
+			</h1>
+			<p class="mx-auto mt-4 max-w-xl text-sm leading-7 text-slate-300 sm:text-base">
+				The verification link expires in 24 hours. Once you click it, your practice sandbox is
+				activated and your login password is already waiting in your email.
+			</p>
+			<div class="mt-8 flex justify-center">
+				<a href="/auth/login" class="secondary-button">I already verified</a>
+			</div>
+		{:else if data.status === 'verified'}
+			<div class="eyebrow">Sandbox active</div>
+			<h1 class="mt-5 text-3xl font-semibold text-white sm:text-4xl">Your sandbox is ready.</h1>
+			<p class="mx-auto mt-4 max-w-xl text-sm leading-7 text-slate-300 sm:text-base">
+				Your account has been activated. Use the password from your email to log into the dashboard,
+				then open n8n with one click and start practicing.
+			</p>
+			<div class="mt-8 flex justify-center">
+				<a href="/auth/login" class="primary-button">Go to login</a>
+			</div>
+		{:else}
+			<div class="eyebrow">Link expired</div>
+			<h1 class="mt-5 text-3xl font-semibold text-white sm:text-4xl">
+				That activation link is no longer valid.
+			</h1>
+			<p class="mx-auto mt-4 max-w-xl text-sm leading-7 text-slate-300 sm:text-base">
+				Create a new sandbox request and we will send a fresh verification email. Existing
+				unverified accounts can safely retry.
+			</p>
+			<div class="mt-8 flex justify-center">
+				<a href="/auth/signup" class="primary-button">Request a fresh link</a>
+			</div>
+		{/if}
+	</div>
 </div>

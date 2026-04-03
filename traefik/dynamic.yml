@@ -7,7 +7,7 @@ http:
         stsIncludeSubdomains: true
         stsPreload: true
         customResponseHeaders:
-          X-XSS-Protection: "1; mode=block"
+          X-XSS-Protection: '1; mode=block'
           X-Content-Type-Options: nosniff
           X-Frame-Options: DENY
           Referrer-Policy: strict-origin-when-cross-origin

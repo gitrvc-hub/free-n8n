@@ -1,13 +1,13 @@
 services:
   traefik:
-    profiles: ["disabled"]
+    profiles: ['disabled']
 
   caddy:
     build: ./caddy-build
     restart: always
     ports:
-      - "10.0.0.229:80:80"
-      - "10.0.0.229:443:443"
+      - '10.0.0.229:80:80'
+      - '10.0.0.229:443:443'
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -26,19 +26,23 @@ services:
     build:
       context: ./watchdog
       dockerfile: Dockerfile
-    image: free-n8n-watchdog
-    command: ["node", "dist/index.js"]
+    image: ghcr.io/gitrvc-hub/free-n8n/watchdog:${GIT_SHA:-latest}
+    command: ['node', 'dist/index.js']
     restart: always
     environment:
       DATABASE_URL: ${DATABASE_URL}
       N8N_DB_URL: ${N8N_DB_URL}
       N8N_API_URL: http://n8n:5678
       N8N_API_KEY: ${N8N_API_KEY}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://n8n.e4dev.com}
       E2_ENDPOINT: ${E2_ENDPOINT}
       E2_ACCESS_KEY_ID: ${E2_ACCESS_KEY_ID}
       E2_SECRET_ACCESS_KEY: ${E2_SECRET_ACCESS_KEY}
       E2_BUCKET: ${E2_BUCKET}
       E2_REGION: ${E2_REGION}
+      INACTIVITY_DAYS: ${INACTIVITY_DAYS:-7}
     networks:
       - internal
     deploy:

@@ -8,9 +8,17 @@ import { runDbBackup } from './jobs/db-backup.js';
 
 info('watchdog', 'Starting', { inactivityDays: config.INACTIVITY_DAYS });
 
-cron.schedule('0 * * * *', () => { runActivityCheck(); });
-cron.schedule('5 * * * *', () => { runInactivityReclaim(); });
-cron.schedule('*/5 * * * *', () => { runHealthCheck(); });
-cron.schedule('0 3 * * *', () => { runDbBackup(); });
+cron.schedule('0 * * * *', () => {
+	runActivityCheck();
+});
+cron.schedule('5 * * * *', () => {
+	runInactivityReclaim();
+});
+cron.schedule('*/5 * * * *', () => {
+	runHealthCheck();
+});
+cron.schedule('0 3 * * *', () => {
+	runDbBackup();
+});
 
 info('watchdog', 'All cron jobs scheduled');
