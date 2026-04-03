@@ -41,11 +41,12 @@ jobs:
     runs-on: self-hosted
     needs: build-push
     steps:
-      - uses: actions/checkout@v4
       - name: Deploy
         env:
           GIT_SHA: ${{ github.sha }}
         run: |
-          export GIT_SHA
-          docker compose pull sveltekit-app watchdog
-          docker compose up -d --no-deps caddy sveltekit-app watchdog
+          REPO_DIR=/home/ubuntu/free-n8n
+          git -C "$REPO_DIR" fetch origin
+          git -C "$REPO_DIR" checkout main
+          git -C "$REPO_DIR" pull --ff-only origin main
+          REPO_DIR="$REPO_DIR" GIT_SHA="$GIT_SHA" "$REPO_DIR/scripts/restart-platform.sh"
