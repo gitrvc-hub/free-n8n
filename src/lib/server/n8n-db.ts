@@ -52,8 +52,11 @@ export async function createN8nUser(email: string, password: string): Promise<N8
 export async function deactivateN8nUser(n8nUserId: string): Promise<void> {
 	await getPool().query(
 		`UPDATE workflow_entity SET active = false WHERE id IN (
-       SELECT "workflowId" FROM shared_workflow WHERE "userId" = $1
-     )`,
+	       SELECT sw."workflowId"
+	       FROM shared_workflow sw
+	       JOIN project_relation pr ON pr."projectId" = sw."projectId"
+	       WHERE pr."userId" = $1
+	     )`,
 		[n8nUserId]
 	);
 }
@@ -61,30 +64,43 @@ export async function deactivateN8nUser(n8nUserId: string): Promise<void> {
 export async function deleteN8nUserData(n8nUserId: string): Promise<void> {
 	await getPool().query(
 		`DELETE FROM execution_entity WHERE id IN (
-       SELECT ee.id FROM execution_entity ee
-       JOIN workflow_entity we ON ee."workflowId" = we.id
-       JOIN shared_workflow sw ON we.id = sw."workflowId"
-       WHERE sw."userId" = $1
-     )`,
+	       SELECT ee.id FROM execution_entity ee
+	       JOIN workflow_entity we ON ee."workflowId" = we.id
+	       JOIN shared_workflow sw ON we.id = sw."workflowId"
+	       JOIN project_relation pr ON pr."projectId" = sw."projectId"
+	       WHERE pr."userId" = $1
+	     )`,
 		[n8nUserId]
 	);
 	await getPool().query(
 		`DELETE FROM workflow_entity WHERE id IN (
-       SELECT "workflowId" FROM shared_workflow WHERE "userId" = $1
-     )`,
+	       SELECT sw."workflowId"
+	       FROM shared_workflow sw
+	       JOIN project_relation pr ON pr."projectId" = sw."projectId"
+	       WHERE pr."userId" = $1
+	     )`,
 		[n8nUserId]
 	);
-	await getPool().query(`DELETE FROM shared_workflow WHERE "userId" = $1`, [n8nUserId]);
-	await getPool().query(`DELETE FROM shared_credentials WHERE "userId" = $1`, [n8nUserId]);
+	await getPool().query(
+		`DELETE FROM shared_workflow
+		 WHERE "projectId" IN (SELECT "projectId" FROM project_relation WHERE "userId" = $1)`,
+		[n8nUserId]
+	);
+	await getPool().query(
+		`DELETE FROM shared_credentials
+		 WHERE "projectId" IN (SELECT "projectId" FROM project_relation WHERE "userId" = $1)`,
+		[n8nUserId]
+	);
 }
 
 export async function getLastExecutionTime(n8nUserId: string): Promise<Date | null> {
 	const result = await getPool().query(
 		`SELECT MAX(ee."startedAt") as last_execution
-     FROM execution_entity ee
-     JOIN workflow_entity we ON ee."workflowId" = we.id
-     JOIN shared_workflow sw ON we.id = sw."workflowId"
-     WHERE sw."userId" = $1`,
+	     FROM execution_entity ee
+	     JOIN workflow_entity we ON ee."workflowId" = we.id
+	     JOIN shared_workflow sw ON we.id = sw."workflowId"
+	     JOIN project_relation pr ON pr."projectId" = sw."projectId"
+	     WHERE pr."userId" = $1`,
 		[n8nUserId]
 	);
 	return result.rows[0]?.last_execution ?? null;
@@ -94,11 +110,12 @@ export async function getAllUserActivity(): Promise<
 	Array<{ n8nUserId: string; lastExecution: Date | null }>
 > {
 	const result = await getPool().query(
-		`SELECT sw."userId" as "n8nUserId", MAX(ee."startedAt") as "lastExecution"
-     FROM shared_workflow sw
-     LEFT JOIN workflow_entity we ON sw."workflowId" = we.id
-     LEFT JOIN execution_entity ee ON we.id = ee."workflowId"
-     GROUP BY sw."userId"`
+		`SELECT pr."userId" as "n8nUserId", MAX(ee."startedAt") as "lastExecution"
+	     FROM project_relation pr
+	     LEFT JOIN shared_workflow sw ON pr."projectId" = sw."projectId"
+	     LEFT JOIN workflow_entity we ON sw."workflowId" = we.id
+	     LEFT JOIN execution_entity ee ON we.id = ee."workflowId"
+	     GROUP BY pr."userId"`
 	);
 	return result.rows;
 }

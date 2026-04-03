@@ -33,10 +33,11 @@ export async function getUserUsageMetrics(
 			COUNT(DISTINCT we.id) FILTER (WHERE COALESCE(we.active, false) = true) AS "activeWorkflowCount",
 			COUNT(ee.id) FILTER (WHERE ee."startedAt" >= date_trunc('day', NOW())) AS "executionsToday",
 			MAX(ee."startedAt") AS "lastExecutionAt"
-		 FROM shared_workflow sw
+		 FROM project_relation pr
+		 LEFT JOIN shared_workflow sw ON pr."projectId" = sw."projectId"
 		 LEFT JOIN workflow_entity we ON sw."workflowId" = we.id
 		 LEFT JOIN execution_entity ee ON we.id = ee."workflowId"
-		 WHERE sw."userId" = $1`,
+		 WHERE pr."userId" = $1`,
 		[n8nUserId]
 	);
 
@@ -62,15 +63,16 @@ export async function getUsersUsageMetrics(
 
 	const result = await getPool().query(
 		`SELECT
-			sw."userId" AS "n8nUserId",
+			pr."userId" AS "n8nUserId",
 			COUNT(DISTINCT we.id) FILTER (WHERE COALESCE(we.active, false) = true) AS "activeWorkflowCount",
 			COUNT(ee.id) FILTER (WHERE ee."startedAt" >= date_trunc('day', NOW())) AS "executionsToday",
 			MAX(ee."startedAt") AS "lastExecutionAt"
-		 FROM shared_workflow sw
+		 FROM project_relation pr
+		 LEFT JOIN shared_workflow sw ON pr."projectId" = sw."projectId"
 		 LEFT JOIN workflow_entity we ON sw."workflowId" = we.id
 		 LEFT JOIN execution_entity ee ON we.id = ee."workflowId"
-		 WHERE sw."userId" = ANY($1::uuid[])
-		 GROUP BY sw."userId"`,
+		 WHERE pr."userId" = ANY($1::uuid[])
+		 GROUP BY pr."userId"`,
 		[n8nUserIds]
 	);
 

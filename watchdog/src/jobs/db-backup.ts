@@ -4,21 +4,35 @@ import { uploadBackup } from '../services/e2-storage.js';
 import { createJobLog } from '../services/platform-db.js';
 import { info, error as logError } from '../lib/logger.js';
 
+function sanitizePgDumpUrl(connectionString: string): string {
+	const url = new URL(connectionString);
+	url.searchParams.delete('schema');
+	return url.toString();
+}
+
 export async function runDbBackup(): Promise<void> {
 	const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 	try {
-		const platformDump = execFileSync('pg_dump', [config.DATABASE_URL, '--no-owner', '--no-acl'], {
-			maxBuffer: 100 * 1024 * 1024
-		});
+		const platformDump = execFileSync(
+			'pg_dump',
+			['--dbname', sanitizePgDumpUrl(config.DATABASE_URL), '--no-owner', '--no-acl'],
+			{
+				maxBuffer: 100 * 1024 * 1024
+			}
+		);
 		const { size: platformSize } = await uploadBackup(
 			'db-backups',
 			Buffer.from(platformDump),
 			`platform-${timestamp}`
 		);
 
-		const n8nDump = execFileSync('pg_dump', [config.N8N_DB_URL, '--no-owner', '--no-acl'], {
-			maxBuffer: 100 * 1024 * 1024
-		});
+		const n8nDump = execFileSync(
+			'pg_dump',
+			['--dbname', sanitizePgDumpUrl(config.N8N_DB_URL), '--no-owner', '--no-acl'],
+			{
+				maxBuffer: 100 * 1024 * 1024
+			}
+		);
 		const { size: n8nSize } = await uploadBackup(
 			'db-backups',
 			Buffer.from(n8nDump),

@@ -1,6 +1,15 @@
 n8n.e4dev.com {
-    handle /n8n/* {
+    @n8n_strip {
+        path /n8n/assets/* /n8n/static/* /n8n/rest/* /n8n/api/* /n8n/types/* /n8n/push/* /n8n/webhook/* /n8n/webhook-test/* /n8n/healthz /n8n/favicon.ico
+    }
+
+    handle @n8n_strip {
         uri strip_prefix /n8n
+        reverse_proxy n8n:5678
+    }
+
+    @n8n path /n8n /n8n/*
+    handle @n8n {
         reverse_proxy n8n:5678
     }
 

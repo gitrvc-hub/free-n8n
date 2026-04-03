@@ -16,6 +16,6 @@ export async function runActivityCheck(): Promise<void> {
 	} catch (err) {
 		const msg = err instanceof Error ? err.message : 'Unknown';
 		logError('activity-check', 'Failed', { error: msg });
-		await createJobLog('health_check', null, 'failed', { error: msg }).catch(() => {});
+		await createJobLog('activity_check', null, 'failed', { error: msg }).catch(() => {});
 	}
 }
