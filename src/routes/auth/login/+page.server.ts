@@ -5,5 +5,7 @@ export const load: PageServerLoad = async (event) => {
 	const session = await event.locals.auth();
 	if (session?.user) redirect(303, '/dashboard');
 
-	return {};
+	return {
+		suspended: event.url.searchParams.get('reason') === 'suspended'
+	};
 };

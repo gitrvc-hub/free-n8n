@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { signIn } from '@auth/sveltekit/client';
 
+	let { data }: { data: { suspended: boolean } } = $props();
 	let email = $state('');
 	let password = $state('');
-	let error = $state('');
+	let error = $state(data.suspended ? 'This account is suspended.' : '');
 	let loading = $state(false);
 
 	async function handleSubmit(e: Event) {
@@ -18,7 +19,7 @@
 		});
 
 		if (result?.error) {
-			error = 'Invalid email or password';
+			error = result.error === 'SUSPENDED' ? 'This account is suspended.' : 'Invalid email or password';
 			loading = false;
 		} else {
 			window.location.href = '/dashboard';

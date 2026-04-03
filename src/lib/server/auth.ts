@@ -24,7 +24,10 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
 					where: { email: parsed.data.email, deletedAt: null }
 				});
 
-				if (!user || !user.isVerified || user.status === 'suspended') return null;
+				if (!user || !user.isVerified) return null;
+				if (user.status === 'suspended') {
+					throw new Error('SUSPENDED');
+				}
 
 				const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
 				if (!valid) return null;
