@@ -1,10 +1,28 @@
-import type { PageServerLoad } from './$types';
+import type { Actions, PageServerLoad } from './$types';
+import { fail, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { FREE_PLAN_LIMITS, getReclaimThresholdDate } from '$lib/server/limits';
 import { getUsersUsageMetrics } from '$lib/server/n8n-metrics';
 import { getSandboxHealth } from '$lib/server/usage';
 
-export const load: PageServerLoad = async () => {
+async function requireAdmin(event: { locals: App.Locals; request: Request }) {
+	const session = await event.locals.auth();
+	if (!session?.user) {
+		return null;
+	}
+
+	const user = await db.user.findUnique({ where: { id: session.user.id, deletedAt: null } });
+	if (!user?.isAdmin) {
+		return null;
+	}
+
+	return user;
+}
+
+export const load: PageServerLoad = async (event) => {
+	const admin = await requireAdmin(event);
+	if (!admin) redirect(303, '/auth/login');
+
 	const reclaimThreshold = getReclaimThresholdDate();
 
 	const [
@@ -17,14 +35,24 @@ export const load: PageServerLoad = async () => {
 		totalBackups,
 		allUsers
 	] = await Promise.all([
-		db.user.count({ where: { deletedAt: null } }),
+		db.user.count({ where: { deletedAt: null, isAdmin: false } }),
 		db.user.count({
-			where: { status: 'active', deletedAt: null, lastActiveAt: { gte: reclaimThreshold } }
+			where: {
+				status: 'active',
+				deletedAt: null,
+				isAdmin: false,
+				lastActiveAt: { gte: reclaimThreshold }
+			}
 		}),
-		db.user.count({ where: { status: 'reclaimed', deletedAt: null } }),
-		db.user.count({ where: { status: 'suspended', deletedAt: null } }),
+		db.user.count({ where: { status: 'reclaimed', deletedAt: null, isAdmin: false } }),
+		db.user.count({ where: { status: 'suspended', deletedAt: null, isAdmin: false } }),
 		db.user.count({
-			where: { status: 'active', deletedAt: null, lastActiveAt: { lt: reclaimThreshold } }
+			where: {
+				status: 'active',
+				deletedAt: null,
+				isAdmin: false,
+				lastActiveAt: { lt: reclaimThreshold }
+			}
 		}),
 		db.jobLog.findMany({
 			orderBy: { createdAt: 'desc' },
@@ -33,7 +61,7 @@ export const load: PageServerLoad = async () => {
 		}),
 		db.backup.aggregate({ _sum: { sizeBytes: true }, _count: true }),
 		db.user.findMany({
-			where: { deletedAt: null },
+			where: { deletedAt: null, isAdmin: false },
 			orderBy: { createdAt: 'desc' },
 			select: {
 				id: true,
@@ -117,6 +145,10 @@ export const load: PageServerLoad = async () => {
 				u.status
 			)
 		})),
+		admin: {
+			id: admin.id,
+			email: admin.email
+		},
 		recentJobs: recentJobs.map((j) => ({
 			id: j.id,
 			jobType: j.jobType,
@@ -125,4 +157,70 @@ export const load: PageServerLoad = async () => {
 			createdAt: j.createdAt.toISOString()
 		}))
 	};
+};
+
+export const actions: Actions = {
+	suspend: async (event) => {
+		const admin = await requireAdmin(event);
+		if (!admin) {
+			return fail(403, { message: 'Forbidden' });
+		}
+
+		const formData = await event.request.formData();
+		const userId = String(formData.get('userId') ?? '');
+
+		const target = await db.user.findUnique({ where: { id: userId, deletedAt: null } });
+		if (!target || target.isAdmin) {
+			return fail(404, { message: 'User not found' });
+		}
+
+		await db.user.update({
+			where: { id: target.id },
+			data: { status: 'suspended' }
+		});
+
+		await db.jobLog.create({
+			data: {
+				jobType: 'health_check',
+				status: 'success',
+				userId: target.id,
+				metadata: { action: 'suspend', adminUserId: admin.id }
+			}
+		});
+
+		return { success: true, action: 'suspend', userId: target.id };
+	},
+	unsuspend: async (event) => {
+		const admin = await requireAdmin(event);
+		if (!admin) {
+			return fail(403, { message: 'Forbidden' });
+		}
+
+		const formData = await event.request.formData();
+		const userId = String(formData.get('userId') ?? '');
+
+		const target = await db.user.findUnique({ where: { id: userId, deletedAt: null } });
+		if (!target || target.isAdmin) {
+			return fail(404, { message: 'User not found' });
+		}
+
+		await db.user.update({
+			where: { id: target.id },
+			data: {
+				status: 'active',
+				lastActiveAt: target.lastActiveAt ?? new Date()
+			}
+		});
+
+		await db.jobLog.create({
+			data: {
+				jobType: 'health_check',
+				status: 'success',
+				userId: target.id,
+				metadata: { action: 'unsuspend', adminUserId: admin.id }
+			}
+		});
+
+		return { success: true, action: 'unsuspend', userId: target.id };
+	}
 };

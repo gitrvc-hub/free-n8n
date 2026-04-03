@@ -11,6 +11,9 @@ export const GET: RequestHandler = async (event) => {
 	if (!session?.user) redirect(303, '/auth/login');
 
 	const user = await db.user.findUnique({ where: { id: session.user.id, deletedAt: null } });
+	if (user?.isAdmin) {
+		redirect(303, '/admin');
+	}
 	if (!user || user.status !== 'active' || !user.n8nPasswordEncrypted) redirect(303, '/dashboard');
 
 	const usage = await getUserUsageMetrics(user.n8nUserId);

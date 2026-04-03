@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import { format, formatDistanceToNow } from 'date-fns';
 	import type { UserStatus } from '@prisma/client';
 	import { getStatusLabel, getStatusTone } from '$lib/ui';
@@ -10,6 +11,10 @@
 	}
 
 	interface AdminData {
+		admin: {
+			id: string;
+			email: string;
+		};
 		stats: {
 			totalUsers: number;
 			activeUsers: number;
@@ -46,6 +51,7 @@
 
 	let { data }: { data: AdminData } = $props();
 	let filter = $state<'all' | UserStatus>('all');
+	let actionMessage = $state('');
 
 	function formatBytes(bytes: number): string {
 		if (bytes === 0) return '0 B';
@@ -86,6 +92,20 @@
 				Track who is actively learning, who is approaching archive, and how much shared sandbox
 				capacity is at risk before users hit practice limits.
 			</p>
+			<div
+				class="rounded-3xl border border-cyan-400/15 bg-cyan-400/8 px-5 py-4 text-sm leading-6 text-cyan-50"
+			>
+				Signed in as platform admin <span class="font-semibold text-white">{data.admin.email}</span
+				>. This account is for platform oversight only and is intentionally excluded from sandbox
+				user flows.
+			</div>
+			{#if actionMessage}
+				<div
+					class="rounded-3xl border border-emerald-400/15 bg-emerald-400/10 px-5 py-4 text-sm text-emerald-100"
+				>
+					{actionMessage}
+				</div>
+			{/if}
 		</div>
 
 		<div class="grid gap-4 sm:grid-cols-2">
@@ -174,6 +194,7 @@
 						<th>Activity</th>
 						<th>Backups</th>
 						<th>Role</th>
+						<th>Actions</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -231,6 +252,41 @@
 									<span class="status-pill status-pill-emerald">Admin</span>
 								{:else}
 									<span class="text-slate-500">Member</span>
+								{/if}
+							</td>
+							<td>
+								{#if user.status === 'suspended'}
+									<form
+										method="POST"
+										action="?/unsuspend"
+										use:enhance={() => {
+											return async ({ result }) => {
+												if (result.type === 'success') {
+													actionMessage = `Unsuspended ${user.email}.`;
+													window.location.reload();
+												}
+											};
+										}}
+									>
+										<input type="hidden" name="userId" value={user.id} />
+										<button class="secondary-button px-4 py-2" type="submit">Unsuspend</button>
+									</form>
+								{:else}
+									<form
+										method="POST"
+										action="?/suspend"
+										use:enhance={() => {
+											return async ({ result }) => {
+												if (result.type === 'success') {
+													actionMessage = `Suspended ${user.email}.`;
+													window.location.reload();
+												}
+											};
+										}}
+									>
+										<input type="hidden" name="userId" value={user.id} />
+										<button class="secondary-button px-4 py-2" type="submit">Suspend</button>
+									</form>
 								{/if}
 							</td>
 						</tr>

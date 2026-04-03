@@ -40,9 +40,10 @@
 				<div class="flex flex-wrap items-center gap-2 sm:gap-3">
 					<a href="/" class="secondary-button px-4 py-2">Overview</a>
 					{#if data.session?.user}
-						<a href="/dashboard" class="secondary-button px-4 py-2">Sandbox</a>
 						{#if (data.session.user as { isAdmin?: boolean }).isAdmin}
 							<a href="/admin" class="secondary-button px-4 py-2">Ops</a>
+						{:else}
+							<a href="/dashboard" class="secondary-button px-4 py-2">Sandbox</a>
 						{/if}
 						<button onclick={handleLogout} class="secondary-button px-4 py-2">Log out</button>
 					{:else}

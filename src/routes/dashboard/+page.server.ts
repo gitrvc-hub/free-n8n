@@ -14,6 +14,7 @@ export const load: PageServerLoad = async (event) => {
 		include: { backups: { orderBy: { createdAt: 'desc' }, take: 1 } }
 	});
 	if (!user) redirect(303, '/auth/login');
+	if (user.isAdmin) redirect(303, '/admin');
 
 	const usage = await getUserUsageMetrics(user.n8nUserId);
 	const latestBackup = user.backups[0] ?? null;
